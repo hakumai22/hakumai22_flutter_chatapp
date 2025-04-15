@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "214423697250",
+    "firebase_url": "https://communityapp-hakumai22-default-rtdb.firebaseio.com",
+    "project_id": "communityapp-hakumai22",
+    "storage_bucket": "communityapp-hakumai22.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:214423697250:android:a760dc37742009f83d5e3b",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzSg86UcouYRGJ9mR_eOy-Hc90NtMN-Vc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

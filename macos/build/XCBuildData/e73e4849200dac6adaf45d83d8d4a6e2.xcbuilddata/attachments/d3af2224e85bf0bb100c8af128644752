@@ -1,0 +1,20 @@
+{
+  "" : {
+    "const-values" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master.swiftconstvalues",
+    "dependencies" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master.d",
+    "diagnostics" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master.dia",
+    "emit-module-dependencies" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master-emit-module.dia",
+    "swift-dependencies" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/file_selector_macos-master.swiftdeps"
+  },
+  "/Users/hakumai/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+2/macos/file_selector_macos/Sources/file_selector_macos/FileSelectorPlugin.swift" : {
+    "index-unit-output-path" : "/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/FileSelectorPlugin.o",
+    "llvm-bc" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/FileSelectorPlugin.bc",
+    "object" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/FileSelectorPlugin.o"
+  },
+  "/Users/hakumai/.pub-cache/hosted/pub.dev/file_selector_macos-0.9.4+2/macos/file_selector_macos/Sources/file_selector_macos/messages.g.swift" : {
+    "index-unit-output-path" : "/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/messages.g.o",
+    "llvm-bc" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/messages.g.bc",
+    "object" : "/Users/hakumai/Documents/develop/fluttertest/flutter_application_1/macos/build/Pods.build/Release/file_selector_macos.build/Objects-normal/arm64/messages.g.o"
+  }
+}
