@@ -176,11 +176,14 @@ class _MainDisplayState extends State<MainDisplay> {
   }
 
   //----------------------------メッセージを関連の関数--------------------------
-  void _addMessage(Uniquemessage message) async {
+  void _addMessage(Uniquemessage message, {bool addcloud = true}) async {
     String chatId = getChatId(karifromuser, karitouser);
     setState(() {
       _messages.insert(0, message.message);
     });
+    if (!addcloud) {
+      return;
+    }
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection('chats').doc(chatId).collection('messages').add({
       'from': karifromuser,

@@ -17,7 +17,7 @@ import 'package:flutter_application_1/overlay.dart';
 import 'package:flutter_application_1/MainDisplay.dart';
 import 'main.dart';
 
-typedef MessageHandler = void Function(Uniquemessage message);
+typedef MessageHandler = void Function(Uniquemessage message, {bool addcloud});
 MessageHandler? addMessageCallback;
 void ListenMethod(List<QueryDocumentSnapshot<Map<String, dynamic>>> datas) {
   if (datas.isEmpty) {
@@ -56,13 +56,12 @@ void addmessageafterlisten(
     text: message,
   );
   Uniquemessage uniquemessage = Uniquemessage(textMessage, from, to);
-
-  // コールバック経由で呼び出し
-  // if (addMessageCallback != null) {
-  //   addMessageCallback!(uniquemessage);
-  // } else {
-  //   print("メッセージハンドラーが登録されていません");
-  // }
+  // コールバックを呼び出す
+  if (addMessageCallback != null) {
+    addMessageCallback!(uniquemessage, addcloud: false);
+  } else {
+    print("メッセージハンドラーが登録されていません");
+  }
 }
 
 Map<String, dynamic> Checknewestdata(
