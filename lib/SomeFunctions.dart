@@ -17,8 +17,14 @@ import 'package:flutter_application_1/overlay.dart';
 import 'package:flutter_application_1/MainDisplay.dart';
 import 'main.dart';
 
+// メッセージ処理用のコールバック
 typedef MessageHandler = void Function(Uniquemessage message, {bool addcloud});
 MessageHandler? addMessageCallback;
+
+// クラウド送信専用のコールバック
+typedef CloudSendHandler = void Function(Uniquemessage message);
+CloudSendHandler? cloudSendCallback;
+
 void ListenMethod(List<QueryDocumentSnapshot<Map<String, dynamic>>> datas) {
   if (datas.isEmpty) {
     return;

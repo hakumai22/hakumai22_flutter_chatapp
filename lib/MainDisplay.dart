@@ -30,18 +30,40 @@ class _MainDisplayState extends State<MainDisplay> {
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
-
+  bool _hasInitialized = false;
   @override
   void initState() {
     super.initState();
     // コールバックの登録
     addMessageCallback = _addMessage;
+    cloudSendCallback = CloudMessagesendonly;
+    if (!_hasInitialized) {
+      _hasInitialized = true;
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      db
+          .collection('chats')
+          .doc(getChatId(karifromuser, karitouser))
+          .collection('messages')
+          .orderBy('timestamp', descending: false) // 昇順（古い順）
+          .get()
+          .then((snapshot) {
+            snapshot.docs.forEach((doc) {
+              addmessageafterlisten(
+                karifromuser,
+                karitouser,
+                doc.data()["message"],
+                doc.data()["timestamp"],
+              );
+            });
+          });
+    }
   }
 
   @override
   void dispose() {
     // コールバックの解除
     addMessageCallback = null;
+    cloudSendCallback = null;
     super.dispose();
   }
 
@@ -176,15 +198,30 @@ class _MainDisplayState extends State<MainDisplay> {
   }
 
   //----------------------------メッセージを関連の関数--------------------------
-  void _addMessage(Uniquemessage message, {bool addcloud = true}) async {
-    String chatId = getChatId(karifromuser, karitouser);
+  void _addMessage(
+    Uniquemessage message, {
+    int timestamp = 0,
+    bool addcloud = true,
+  }) {
+    // String chatId = getChatId(karifromuser, karitouser);
     setState(() {
       _messages.insert(0, message.message);
     });
-    if (!addcloud) {
-      return;
+    if (addcloud) {
+      CloudMessagesendonly(message);
     }
+    // FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // await firestore.collection('chats').doc(chatId).collection('messages').add({
+    //   'from': karifromuser,
+    //   'to': karitouser,
+    //   'message': message.message.text,
+    //   'timestamp': message.message.createdAt,
+    // });
+  }
+
+  void CloudMessagesendonly(Uniquemessage message) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    String chatId = getChatId(karifromuser, karitouser);
     await firestore.collection('chats').doc(chatId).collection('messages').add({
       'from': karifromuser,
       'to': karitouser,
@@ -200,6 +237,6 @@ class _MainDisplayState extends State<MainDisplay> {
       id: randomString(),
       text: message.text,
     );
-    _addMessage(Uniquemessage(textMessage, karifromuser, karitouser));
+    CloudMessagesendonly(Uniquemessage(textMessage, karifromuser, karitouser));
   }
 }
