@@ -17,6 +17,7 @@ import 'package:flutter_application_1/overlay.dart';
 import 'package:flutter_application_1/struct/Uniquemessage.dart';
 import 'MainDisplay.dart';
 import 'SomeFunctions.dart';
+import 'LoginDisplay.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,9 +34,13 @@ void main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
   const MyApp({super.key});
+  State<MyApp> createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -43,7 +48,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
-      home: MainDisplay(),
+      home: Logindisplay(),
       debugShowCheckedModeBanner: false,
     );
   }

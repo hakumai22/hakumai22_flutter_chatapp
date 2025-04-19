@@ -16,6 +16,7 @@ import 'package:flutter_application_1/struct/Uniquemessage.dart';
 import 'package:flutter_application_1/overlay.dart';
 import 'package:flutter_application_1/MainDisplay.dart';
 import 'main.dart';
+import 'LoginDisplay.dart';
 
 // メッセージ処理用のコールバック
 typedef MessageHandler = void Function(Uniquemessage message, {bool addcloud});

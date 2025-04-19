@@ -15,16 +15,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/overlay.dart';
 import 'package:flutter_application_1/struct/Uniquemessage.dart';
 import 'package:flutter_application_1/SomeFunctions.dart';
+import 'LoginDisplay.dart';
 
 class MainDisplay extends StatefulWidget {
+  final String userId;
+  MainDisplay({required this.userId});
   @override
   _MainDisplayState createState() => _MainDisplayState();
 }
 
 class _MainDisplayState extends State<MainDisplay> {
   static List<types.Message> _messages = [];
-  final String karifromuser = "56023";
-  final String karitouser = "56024";
+  String karifromuser = "56023";
+  String karitouser = "56024";
   final _byuser = const types.User(
     id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
     firstName: "hakumai22",
@@ -34,6 +37,8 @@ class _MainDisplayState extends State<MainDisplay> {
   @override
   void initState() {
     super.initState();
+    karifromuser = widget.userId;
+    karitouser = "56024";
     // コールバックの登録
     addMessageCallback = _addMessage;
     cloudSendCallback = CloudMessagesendonly;
