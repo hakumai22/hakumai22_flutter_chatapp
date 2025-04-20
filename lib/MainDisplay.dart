@@ -37,8 +37,8 @@ class _MainDisplayState extends State<MainDisplay> {
   @override
   void initState() {
     super.initState();
-    karifromuser = widget.userId;
-    karitouser = "56024";
+    String fromuser = widget.userId;
+    String touser = "56024"; //サイドバーのユーザーIDから伝えられた情報を代入するようにする
     // コールバックの登録
     addMessageCallback = _addMessage;
     cloudSendCallback = CloudMessagesendonly;
@@ -47,7 +47,7 @@ class _MainDisplayState extends State<MainDisplay> {
       FirebaseFirestore db = FirebaseFirestore.instance;
       db
           .collection('chats')
-          .doc(getChatId(karifromuser, karitouser))
+          .doc(getChatId(fromuser, karitouser))
           .collection('messages')
           .orderBy('timestamp', descending: false) // 昇順（古い順）
           .get()
@@ -61,6 +61,9 @@ class _MainDisplayState extends State<MainDisplay> {
               );
             });
           });
+      Future(() async {
+        SearchbyuserId(fromuser);
+      });
     }
   }
 

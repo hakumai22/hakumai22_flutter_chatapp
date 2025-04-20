@@ -45,6 +45,40 @@ String getChatId(String userId1, String userId2) {
   return "${sortedIds[0]}_${sortedIds[1]}";
 }
 
+Future<List<String>> SearchbyuserId(String userId) async {
+  //テスト用に入ってくるidは56023
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  List<String> userNameMatchIds = [];
+  try {
+    QuerySnapshot<Map<String, dynamic>> snapshot =
+        await db.collection('chats').get();
+    print(snapshot.docs.length);
+    for (var doc in snapshot.docs) {
+      if (doc.id.contains(userId)) {
+        debugPrint(doc.id.replaceAll(userId, "").replaceAll("_", ""));
+        userNameMatchIds.add(doc.id.replaceAll(userId, "").replaceAll("-", ""));
+      }
+    } //forが回されていないので、snapshot.docsの中身が空になっている。
+  } catch (e) {
+    print("エラーが発生しました: $e");
+  }
+  final querySnapshot =
+      await FirebaseFirestore.instance.collection('chats').get();
+
+  // 各ドキュメントのIDをリストで取得
+  List<String> documentIds = querySnapshot.docs.map((doc) => doc.id).toList();
+  return userNameMatchIds; //後々userNameMatchIdsの中身が何もなかった場合はエラーを表示させるかなんかする。（それかようこそ画面？みたいな）
+}
+
+Future<bool> doesCollectionExist(String collectionName) async {
+  final snapshot =
+      await FirebaseFirestore.instance
+          .collection(collectionName)
+          .limit(1)
+          .get();
+  return snapshot.docs.isNotEmpty;
+}
+
 void addmessageafterlisten(
   String from,
   String to,
