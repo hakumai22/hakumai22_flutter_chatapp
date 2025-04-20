@@ -1,21 +1,9 @@
-import 'dart:ui';
-import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'dart:convert';
-import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_1/overlay.dart';
-import 'package:flutter_application_1/struct/Uniquemessage.dart';
-import 'package:flutter_application_1/SomeFunctions.dart';
-import 'LoginDisplay.dart';
+import 'dart:ui';
+import 'barrel.dart';
 
 class MainDisplay extends StatefulWidget {
   final String userId;
@@ -38,6 +26,13 @@ class _MainDisplayState extends State<MainDisplay> {
   void initState() {
     super.initState();
     String fromuser = widget.userId;
+    CustomUser user = CustomUser(
+      fromuser,
+      "hakumai22",
+      "password",
+      "email",
+      "images/genseki.png",
+    );
     String touser = "56024"; //サイドバーのユーザーIDから伝えられた情報を代入するようにする
     // コールバックの登録
     addMessageCallback = _addMessage;

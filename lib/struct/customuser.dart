@@ -5,9 +5,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:ui';
 import '../barrel.dart';
 
-class Uniquemessage {
-  String from;
-  String to;
-  types.TextMessage message;
-  Uniquemessage(this.message, this.from, this.to);
+class CustomUser {
+  String userId;
+  String userName;
+  String password;
+  String email;
+  String imagePath;
+  CustomUser(
+    this.userId,
+    this.userName,
+    this.password,
+    this.email,
+    this.imagePath,
+  );
 }
