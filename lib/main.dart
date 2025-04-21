@@ -8,15 +8,6 @@ import 'barrel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseFirestore db = FirebaseFirestore.instance;
-  final docRef = db
-      .collection("chats")
-      .doc(getChatId("56023", "56024"))
-      .collection("messages");
-  docRef.snapshots().listen(
-    (event) => ListenMethod(event.docs),
-    onError: (error) => debugPrint("Listen failed: $error"),
-  );
   runApp(MyApp());
 }
 

@@ -16,50 +16,78 @@ class _MainDisplayState extends State<MainDisplay> {
   static List<types.Message> _messages = [];
   String karifromuser = "56023";
   String karitouser = "56024";
-  final _byuser = const types.User(
-    id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
+  List<String> userlist = [];
+  bool _hasInitialized = false;
+  types.User _byuser = types.User(
+    id: "56023",
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
-  bool _hasInitialized = false;
   @override
   void initState() {
     super.initState();
-    String fromuser = widget.userId;
-    CustomUser user = CustomUser(
-      fromuser,
-      "hakumai22",
-      "password",
-      "email",
-      "images/genseki.png",
-    );
-    String touser = "56024"; //サイドバーのユーザーIDから伝えられた情報を代入するようにする
-    // コールバックの登録
     addMessageCallback = _addMessage;
     cloudSendCallback = CloudMessagesendonly;
-    if (!_hasInitialized) {
-      _hasInitialized = true;
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      db
-          .collection('chats')
-          .doc(getChatId(fromuser, karitouser))
-          .collection('messages')
-          .orderBy('timestamp', descending: false) // 昇順（古い順）
-          .get()
-          .then((snapshot) {
-            snapshot.docs.forEach((doc) {
-              addmessageafterlisten(
-                karifromuser,
-                karitouser,
-                doc.data()["message"],
-                doc.data()["timestamp"],
-              );
-            });
-          });
-      Future(() async {
-        SearchbyuserId(fromuser);
-      });
+    String fromuser = widget.userId;
+    if (fromuser == null) {
+      debugPrint("userIdがnull");
+      fromuser = karifromuser;
     }
+    _byuser = types.User(
+      id: fromuser,
+      firstName: "hakumai22",
+      imageUrl: "images/genseki.png",
+    ); //後でcustomuser.userにする
+    CustomUser? customuser;
+    Future(() async {
+      userlist = await SearchbyuserId(fromuser);
+      customuser = await findUserInfo(fromuser);
+      if (customuser != null) {
+        _byuser = customuser!.user;
+      }
+      if (customuser == null) {
+        debugPrint("finduserInfoがnull");
+        customuser = CustomUser(
+          fromuser,
+          "hakumai22",
+          "password",
+          "email",
+          "images/genseki.png",
+          _byuser,
+        );
+      }
+      FirebaseFirestore db = FirebaseFirestore.instance;
+      //docrefの56024の部分を複数の人のために相手リストをforeachで回す。
+      final docRef = db
+          .collection("chats")
+          .doc(getChatId("56023", "56024"))
+          .collection("messages");
+      docRef.snapshots().listen(
+        (event) async => ListenMethod(event.docs, await findUserInfo("56023")),
+        onError: (error) => debugPrint("Listen failed: $error"),
+      );
+      if (!_hasInitialized) {
+        _hasInitialized = true;
+        FirebaseFirestore db = FirebaseFirestore.instance;
+        db
+            .collection('chats')
+            .doc(getChatId(fromuser, karitouser))
+            .collection('messages')
+            .orderBy('timestamp', descending: false) // 昇順（古い順）
+            .get()
+            .then((snapshot) {
+              snapshot.docs.forEach((doc) {
+                addmessageafterlisten(
+                  doc.data()["message"],
+                  karitouser,
+                  doc.data()["timestamp"],
+                  customuser,
+                );
+              });
+            });
+      }
+    }); //サイドバーのユーザーIDから伝えられた情報を代入するようにする
+    // コールバックの登録
   }
 
   @override
@@ -109,59 +137,59 @@ class _MainDisplayState extends State<MainDisplay> {
             width: 200,
             color: Theme.of(context).colorScheme.surfaceContainerLow,
             child: ListView(
-              children: [
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {},
-                    child: ListTile(
-                      leading: Text(
-                        "#",
-                        style: TextStyle(
-                          fontSize: 20,
-                          //fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      title: Text('channel1'),
-                    ),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {},
-                    child: ListTile(
-                      leading: Text(
-                        "#",
-                        style: TextStyle(
-                          fontSize: 20,
-                          //fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      title: Text('channel2'),
-                    ),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {},
-                    child: ListTile(
-                      leading: Text(
-                        "#",
-                        style: TextStyle(
-                          fontSize: 20,
-                          //fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      title: Text('channel3'),
-                    ),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-              ],
+              // children: [
+              //   Material(
+              //     color: Colors.transparent,
+              //     child: InkWell(
+              //       onTap: () {},
+              //       child: ListTile(
+              //         leading: Text(
+              //           "#",
+              //           style: TextStyle(
+              //             fontSize: 20,
+              //             //fontWeight: FontWeight.bold
+              //           ),
+              //         ),
+              //         title: Text('channel1'),
+              //       ),
+              //       borderRadius: BorderRadius.circular(100),
+              //     ),
+              //   ),
+              //   Material(
+              //     color: Colors.transparent,
+              //     child: InkWell(
+              //       onTap: () {},
+              //       child: ListTile(
+              //         leading: Text(
+              //           "#",
+              //           style: TextStyle(
+              //             fontSize: 20,
+              //             //fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //         title: Text('channel2'),
+              //       ),
+              //       borderRadius: BorderRadius.circular(100),
+              //     ),
+              //   ),
+              //   Material(
+              //     color: Colors.transparent,
+              //     child: InkWell(
+              //       onTap: () {},
+              //       child: ListTile(
+              //         leading: Text(
+              //           "#",
+              //           style: TextStyle(
+              //             fontSize: 20,
+              //             //fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //         title: Text('channel3'),
+              //       ),
+              //       borderRadius: BorderRadius.circular(100),
+              //     ),
+              //   ),
+              // ],
             ),
           ),
           //--------------------------チャット画面--------------------------
@@ -213,13 +241,6 @@ class _MainDisplayState extends State<MainDisplay> {
     if (addcloud) {
       CloudMessagesendonly(message);
     }
-    // FirebaseFirestore firestore = FirebaseFirestore.instance;
-    // await firestore.collection('chats').doc(chatId).collection('messages').add({
-    //   'from': karifromuser,
-    //   'to': karitouser,
-    //   'message': message.message.text,
-    //   'timestamp': message.message.createdAt,
-    // });
   }
 
   void CloudMessagesendonly(Uniquemessage message) async {

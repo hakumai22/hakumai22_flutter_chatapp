@@ -11,11 +11,13 @@ class CustomUser {
   String password;
   String email;
   String imagePath;
+  types.User user;
   CustomUser(
     this.userId,
     this.userName,
     this.password,
     this.email,
     this.imagePath,
+    this.user,
   );
 }

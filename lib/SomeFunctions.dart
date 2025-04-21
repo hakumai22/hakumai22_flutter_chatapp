@@ -13,37 +13,56 @@ MessageHandler? addMessageCallback;
 typedef CloudSendHandler = void Function(Uniquemessage message);
 CloudSendHandler? cloudSendCallback;
 
-void ListenMethod(List<QueryDocumentSnapshot<Map<String, dynamic>>> datas) {
+void ListenMethod(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> datas,
+  CustomUser? customuser,
+) {
   if (datas.isEmpty) {
     return;
   }
   Map<String, dynamic> newestdata = Checknewestdata(datas);
   addmessageafterlisten(
-    newestdata['from'],
-    newestdata['to'],
     newestdata['message'],
+    newestdata['to'],
     newestdata['timestamp'],
+    customuser,
   );
 }
 
-CustomUser? FindUser(String userId) {
+Future<CustomUser?> findUserInfo(String userId) async {
   FirebaseFirestore db = FirebaseFirestore.instance;
-  db.collection("users").doc(userId).get().then((DocumentSnapshot doc) {
-    if (doc.exists) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      return CustomUser(
-        userId,
-        data['userName'],
-        data['password'],
-        data['email'],
-        data['imagePath'],
-      );
-    } else {
-      print("ユーザーが見つかりません");
-      return null;
+  DocumentSnapshot doc = await db.collection("users").doc(userId).get();
+  if (doc.exists) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    if (data['UserName'] == null ||
+        data['password'] == null ||
+        data['email'] == null ||
+        data['imagePath'] == null) {
+      debugPrint("Firestoreデータに不足があります");
     }
-  });
-  return null;
+    debugPrint(
+      userId +
+          data['UserName'] +
+          data['password'] +
+          data['email'] +
+          data['imagePath'],
+    );
+    return CustomUser(
+      userId,
+      data['UserName'],
+      data['password'],
+      data['email'],
+      data['imagePath'],
+      types.User(
+        id: userId,
+        firstName: data["UserName"],
+        imageUrl: "images/genseki.png",
+      ),
+    );
+  } else {
+    debugPrint("ユーザーが見つかりません");
+    return null;
+  }
 }
 
 String getChatId(String userId1, String userId2) {
@@ -87,23 +106,32 @@ Future<bool> doesCollectionExist(String collectionName) async {
 }
 
 void addmessageafterlisten(
-  String from,
-  String to,
   String message,
+  String to,
   int timestamp,
+  CustomUser? customuser,
 ) {
+  if (customuser == null) {
+    print("ユーザー情報が取得できませんでした");
+    return;
+  }
   types.User user = types.User(
-    id: '82091008-a484-4a89-ae75-a22bf8d6f3ac',
-    firstName: "hakumai22",
-    imageUrl: "images/genseki.png",
+    id: customuser.userId,
+    firstName: customuser.userName,
+    imageUrl: customuser.imagePath,
   );
+  //customuserによるユーザー情報の取得
   types.TextMessage textMessage = types.TextMessage(
     author: user,
     createdAt: timestamp,
     id: randomString(),
     text: message,
   );
-  Uniquemessage uniquemessage = Uniquemessage(textMessage, from, to);
+  Uniquemessage uniquemessage = Uniquemessage(
+    textMessage,
+    customuser.userId,
+    to,
+  );
   // コールバックを呼び出す
   if (addMessageCallback != null) {
     addMessageCallback!(uniquemessage, addcloud: false);
