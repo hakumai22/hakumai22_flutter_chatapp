@@ -18,6 +18,7 @@ class _MainDisplayState extends State<MainDisplay> {
   String karitouser = "56024";
   List<String> userlist = [];
   bool _hasInitialized = false;
+  List<Widget> sidebarWidgets = [];
   types.User _byuser = types.User(
     id: "56023",
     firstName: "hakumai22",
@@ -101,97 +102,64 @@ class _MainDisplayState extends State<MainDisplay> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(
+        child: Container(
+          color: Theme.of(context).colorScheme.surfaceContainerLow,
+          child: ListView(
+            children: [
+              Container(
+                height: 100,
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                child: Center(
+                  child: Text(
+                    "サイドバー",
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+              ...sidebarWidgets,
+            ],
+          ),
+        ),
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
       appBar: AppBar(
         title: Text("テスト用のルーム"),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
-        leading: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(100),
-            onTap: () {
-              if (overlayEntry == null) {
-                showOverlay(context, false);
-              } else {
-                showOverlay(context, true);
-              }
-            },
-            child: Container(
-              margin: EdgeInsets.all(8),
-              constraints: BoxConstraints.expand(),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: AssetImage("images/genseki.png"),
+        actions: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(100),
+              onTap: () {
+                if (overlayEntry == null) {
+                  showOverlay(context, false);
+                } else {
+                  showOverlay(context, true);
+                }
+              },
+              child: Container(
+                width: kToolbarHeight,
+                height: kToolbarHeight,
+                margin: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    fit: BoxFit.scaleDown,
+                    image: AssetImage("images/genseki.png"),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
 
       body: Row(
         children: [
-          //----------------------------左側ナビゲーション--------------------------
-          Container(
-            width: 200,
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            child: ListView(
-              // children: [
-              //   Material(
-              //     color: Colors.transparent,
-              //     child: InkWell(
-              //       onTap: () {},
-              //       child: ListTile(
-              //         leading: Text(
-              //           "#",
-              //           style: TextStyle(
-              //             fontSize: 20,
-              //             //fontWeight: FontWeight.bold
-              //           ),
-              //         ),
-              //         title: Text('channel1'),
-              //       ),
-              //       borderRadius: BorderRadius.circular(100),
-              //     ),
-              //   ),
-              //   Material(
-              //     color: Colors.transparent,
-              //     child: InkWell(
-              //       onTap: () {},
-              //       child: ListTile(
-              //         leading: Text(
-              //           "#",
-              //           style: TextStyle(
-              //             fontSize: 20,
-              //             //fontWeight: FontWeight.bold,
-              //           ),
-              //         ),
-              //         title: Text('channel2'),
-              //       ),
-              //       borderRadius: BorderRadius.circular(100),
-              //     ),
-              //   ),
-              //   Material(
-              //     color: Colors.transparent,
-              //     child: InkWell(
-              //       onTap: () {},
-              //       child: ListTile(
-              //         leading: Text(
-              //           "#",
-              //           style: TextStyle(
-              //             fontSize: 20,
-              //             //fontWeight: FontWeight.bold,
-              //           ),
-              //         ),
-              //         title: Text('channel3'),
-              //       ),
-              //       borderRadius: BorderRadius.circular(100),
-              //     ),
-              //   ),
-              // ],
-            ),
-          ),
           //--------------------------チャット画面--------------------------
           Expanded(
             child: Stack(
