@@ -67,6 +67,26 @@ class _MainDisplayState extends State<MainDisplay> {
         (event) async => ListenMethod(event.docs, await findUserInfo("56023")),
         onError: (error) => debugPrint("Listen failed: $error"),
       );
+      //--------------------------------------ユーザー一覧をサイドバーに表示する作業----------------------------------------------------
+      for (var i in userlist) {
+        sidebarWidgets.add(
+          Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: ListTile(
+              title: Text(i),
+              leading: CircleAvatar(
+                backgroundImage: AssetImage("images/genseki.png"),
+              ),
+              selectedTileColor: Theme.of(context).colorScheme.primary,
+              selected: true,
+              onTap: () {
+                debugPrint("tapped");
+              },
+            ),
+          ),
+        );
+      }
+      //--------------------------------------------終----------------------------------------
       if (!_hasInitialized) {
         _hasInitialized = true;
         FirebaseFirestore db = FirebaseFirestore.instance;
@@ -108,17 +128,28 @@ class _MainDisplayState extends State<MainDisplay> {
           child: ListView(
             children: [
               Container(
-                height: 100,
+                height: 80,
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
-                child: Center(
-                  child: Text(
-                    "サイドバー",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Theme.of(context).colorScheme.onSurface,
+                child: Padding(
+                  child: Align(
+                    child: Text(
+                      "Chats",
+                      style: TextStyle(
+                        fontSize: 25,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
+                    alignment: Alignment.centerLeft,
                   ),
+                  padding: EdgeInsets.only(left: 20),
                 ),
+              ),
+              Divider(
+                color: Theme.of(context).colorScheme.secondaryFixedDim,
+                height: 1,
+                thickness: 1,
+                indent: 16,
+                endIndent: 16,
               ),
               ...sidebarWidgets,
             ],

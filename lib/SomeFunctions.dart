@@ -72,6 +72,7 @@ String getChatId(String userId1, String userId2) {
 }
 
 Future<List<String>> SearchbyuserId(String userId) async {
+  //userIdに自分のIDを入れる
   //テスト用に入ってくるidは56023
   FirebaseFirestore db = FirebaseFirestore.instance;
   List<String> userNameMatchIds = [];
@@ -82,7 +83,7 @@ Future<List<String>> SearchbyuserId(String userId) async {
     for (var doc in snapshot.docs) {
       if (doc.id.contains(userId)) {
         debugPrint(doc.id.replaceAll(userId, "").replaceAll("_", ""));
-        userNameMatchIds.add(doc.id.replaceAll(userId, "").replaceAll("-", ""));
+        userNameMatchIds.add(doc.id.replaceAll(userId, "").replaceAll("_", ""));
       }
     } //forが回されていないので、snapshot.docsの中身が空になっている。
   } catch (e) {
