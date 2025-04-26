@@ -18,6 +18,7 @@ class _MainDisplayState extends State<MainDisplay> {
   String karitouser = "56024";
   List<String> userlist = [];
   bool _hasInitialized = false;
+  List<bool> isSelected = [];
   List<Widget> sidebarWidgets = [];
   types.User _byuser = types.User(
     id: "56023",
@@ -68,20 +69,39 @@ class _MainDisplayState extends State<MainDisplay> {
         onError: (error) => debugPrint("Listen failed: $error"),
       );
       //--------------------------------------ユーザー一覧をサイドバーに表示する作業----------------------------------------------------
-      for (var i in userlist) {
+      isSelected = List.generate(userlist.length, (index) => false);
+      for (var i in userlist.asMap().entries) {
+        int index = i.key;
+        String userId = i.value;
         sidebarWidgets.add(
           Padding(
-            padding: EdgeInsets.only(top: 20),
-            child: ListTile(
-              title: Text(i),
-              leading: CircleAvatar(
-                backgroundImage: AssetImage("images/genseki.png"),
+            padding: EdgeInsets.only(top: 20, left: 10, right: 10),
+            child: Material(
+              color: Colors.transparent,
+              child: ListTile(
+                title: Text(userId),
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage("images/genseki.png"),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50.0), // 非常に大きな値で楕円形に
+                ),
+                selectedTileColor:
+                    Theme.of(context).colorScheme.primaryContainer,
+                selectedColor: Color(0xFF000000),
+                selected: isSelected[index],
+                onTap: () {
+                  debugPrint("tapped");
+                  isSelected.fillRange(0, userlist.length, false);
+                  isSelected[index] = true;
+                  setState(() {});
+                  debugPrint(isSelected.toString());
+                },
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 4.0,
+                ),
               ),
-              selectedTileColor: Theme.of(context).colorScheme.primary,
-              selected: true,
-              onTap: () {
-                debugPrint("tapped");
-              },
             ),
           ),
         );
