@@ -18,13 +18,13 @@ class _MainDisplayState extends State<MainDisplay> {
   String karitouser = "56024";
   List<String> userlist = [];
   bool _hasInitialized = false;
-  List<bool> isSelected = [];
-  List<Widget> sidebarWidgets = [];
+  int? _selectedIndex;
   types.User _byuser = types.User(
     id: "56023",
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
+
   @override
   void initState() {
     super.initState();
@@ -39,7 +39,8 @@ class _MainDisplayState extends State<MainDisplay> {
       id: fromuser,
       firstName: "hakumai22",
       imageUrl: "images/genseki.png",
-    ); //後でcustomuser.userにする
+    );
+
     CustomUser? customuser;
     Future(() async {
       userlist = await SearchbyuserId(fromuser);
@@ -58,8 +59,8 @@ class _MainDisplayState extends State<MainDisplay> {
           _byuser,
         );
       }
+
       FirebaseFirestore db = FirebaseFirestore.instance;
-      //docrefの56024の部分を複数の人のために相手リストをforeachで回す。
       final docRef = db
           .collection("chats")
           .doc(getChatId("56023", "56024"))
@@ -68,45 +69,15 @@ class _MainDisplayState extends State<MainDisplay> {
         (event) async => ListenMethod(event.docs, await findUserInfo("56023")),
         onError: (error) => debugPrint("Listen failed: $error"),
       );
-      //--------------------------------------ユーザー一覧をサイドバーに表示する作業----------------------------------------------------
-      isSelected = List.generate(userlist.length, (index) => false);
-      for (var i in userlist.asMap().entries) {
-        int index = i.key;
-        String userId = i.value;
-        sidebarWidgets.add(
-          Padding(
-            padding: EdgeInsets.only(top: 20, left: 10, right: 10),
-            child: Material(
-              color: Colors.transparent,
-              child: ListTile(
-                title: Text(userId),
-                leading: CircleAvatar(
-                  backgroundImage: AssetImage("images/genseki.png"),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50.0), // 非常に大きな値で楕円形に
-                ),
-                selectedTileColor:
-                    Theme.of(context).colorScheme.primaryContainer,
-                selectedColor: Color(0xFF000000),
-                selected: isSelected[index],
-                onTap: () {
-                  debugPrint("tapped");
-                  isSelected.fillRange(0, userlist.length, false);
-                  isSelected[index] = true;
-                  setState(() {});
-                  debugPrint(isSelected.toString());
-                },
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 4.0,
-                ),
-              ),
-            ),
-          ),
-        );
+
+      if (userlist.isNotEmpty && _selectedIndex == null) {
+        _selectedIndex = 0;
       }
-      //--------------------------------------------終----------------------------------------
+
+      if (mounted) {
+        setState(() {});
+      }
+
       if (!_hasInitialized) {
         _hasInitialized = true;
         FirebaseFirestore db = FirebaseFirestore.instance;
@@ -114,7 +85,7 @@ class _MainDisplayState extends State<MainDisplay> {
             .collection('chats')
             .doc(getChatId(fromuser, karitouser))
             .collection('messages')
-            .orderBy('timestamp', descending: false) // 昇順（古い順）
+            .orderBy('timestamp', descending: false)
             .get()
             .then((snapshot) {
               snapshot.docs.forEach((doc) {
@@ -127,13 +98,11 @@ class _MainDisplayState extends State<MainDisplay> {
               });
             });
       }
-    }); //サイドバーのユーザーIDから伝えられた情報を代入するようにする
-    // コールバックの登録
+    });
   }
 
   @override
   void dispose() {
-    // コールバックの解除
     addMessageCallback = null;
     cloudSendCallback = null;
     super.dispose();
@@ -141,6 +110,47 @@ class _MainDisplayState extends State<MainDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> dynamicSidebarWidgets = [];
+
+    if (userlist.isNotEmpty) {
+      for (var entry in userlist.asMap().entries) {
+        int index = entry.key;
+        String userId = entry.value;
+
+        dynamicSidebarWidgets.add(
+          Padding(
+            padding: EdgeInsets.only(top: 20, left: 10, right: 10),
+            child: Material(
+              color: Colors.transparent,
+              child: ListTile(
+                title: Text(userId),
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage("images/genseki.png"),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50.0),
+                ),
+                selectedTileColor:
+                    Theme.of(context).colorScheme.primaryContainer,
+                selectedColor: Color(0xFF000000),
+                selected: _selectedIndex == index,
+                onTap: () {
+                  setState(() {
+                    _selectedIndex = index;
+                  });
+                  debugPrint("tapped index: $index, user: $userId");
+                },
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 4.0,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       drawer: Drawer(
         child: Container(
@@ -151,7 +161,9 @@ class _MainDisplayState extends State<MainDisplay> {
                 height: 80,
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
                 child: Padding(
+                  padding: EdgeInsets.only(left: 20),
                   child: Align(
+                    alignment: Alignment.centerLeft,
                     child: Text(
                       "Chats",
                       style: TextStyle(
@@ -159,9 +171,7 @@ class _MainDisplayState extends State<MainDisplay> {
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    alignment: Alignment.centerLeft,
                   ),
-                  padding: EdgeInsets.only(left: 20),
                 ),
               ),
               Divider(
@@ -171,7 +181,7 @@ class _MainDisplayState extends State<MainDisplay> {
                 indent: 16,
                 endIndent: 16,
               ),
-              ...sidebarWidgets,
+              ...dynamicSidebarWidgets,
             ],
           ),
         ),
@@ -211,7 +221,6 @@ class _MainDisplayState extends State<MainDisplay> {
 
       body: Row(
         children: [
-          //--------------------------チャット画面--------------------------
           Expanded(
             child: Stack(
               children: [
@@ -231,10 +240,7 @@ class _MainDisplayState extends State<MainDisplay> {
                     onSendPressed: _handleSendPressed,
                     theme: DefaultChatTheme(
                       inputTextStyle: TextStyle(
-                        color:
-                            Theme.of(
-                              context,
-                            ).colorScheme.onSurface, // プレースホルダーテキストの色を薄いグレーに設定
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -247,13 +253,11 @@ class _MainDisplayState extends State<MainDisplay> {
     );
   }
 
-  //----------------------------メッセージを関連の関数--------------------------
   void _addMessage(
     Uniquemessage message, {
     int timestamp = 0,
     bool addcloud = true,
   }) {
-    // String chatId = getChatId(karifromuser, karitouser);
     setState(() {
       _messages.insert(0, message.message);
     });
