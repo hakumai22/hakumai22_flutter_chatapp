@@ -36,8 +36,8 @@ void showOverlay(BuildContext context, bool a) {
               ),
             ),
             Positioned(
-              top: 50,
-              left: 20,
+              bottom: MediaQuery.of(context).size.height - 350,
+              left: MediaQuery.of(context).size.width - 320,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(

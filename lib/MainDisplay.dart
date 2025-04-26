@@ -111,10 +111,10 @@ class _MainDisplayState extends State<MainDisplay> {
   @override
   Widget build(BuildContext context) {
     List<Widget> dynamicSidebarWidgets = [];
-
+    int indexHome = 0;
     if (userlist.isNotEmpty) {
       for (var entry in userlist.asMap().entries) {
-        int index = entry.key;
+        int index = entry.key + 1;
         String userId = entry.value;
 
         dynamicSidebarWidgets.add(
@@ -180,6 +180,32 @@ class _MainDisplayState extends State<MainDisplay> {
                 thickness: 1,
                 indent: 16,
                 endIndent: 16,
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 20, left: 10, right: 10),
+                child: Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    title: Text("Home"),
+                    leading: Icon(Icons.home),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50.0),
+                    ),
+                    selectedTileColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    selectedColor: Color(0xFF000000),
+                    selected: _selectedIndex == indexHome,
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = indexHome;
+                      });
+                    },
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
+                  ),
+                ),
               ),
               ...dynamicSidebarWidgets,
             ],
