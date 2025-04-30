@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:ui';
@@ -24,22 +25,17 @@ class _MainDisplayState extends State<MainDisplay> {
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
-
+  String fromuser = "56023";
   @override
   void initState() {
     super.initState();
     addMessageCallback = _addMessage;
     cloudSendCallback = CloudMessagesendonly;
-    String fromuser = widget.userId;
+    fromuser = widget.userId;
     if (fromuser == null) {
       debugPrint("userIdがnull");
       fromuser = karifromuser;
     }
-    _byuser = types.User(
-      id: fromuser,
-      firstName: "hakumai22",
-      imageUrl: "images/genseki.png",
-    );
 
     CustomUser? customuser;
     Future(() async {
@@ -59,7 +55,11 @@ class _MainDisplayState extends State<MainDisplay> {
           _byuser,
         );
       }
-
+      _byuser = types.User(
+        id: fromuser,
+        firstName: customuser!.userName,
+        imageUrl: "images/genseki.png",
+      );
       FirebaseFirestore db = FirebaseFirestore.instance;
       final docRef = db
           .collection("chats")
@@ -110,13 +110,36 @@ class _MainDisplayState extends State<MainDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    Widget _buildChatWidget(String chattouser) {
+      if (chattouser != "Home") {
+        return Chat(
+          user: _byuser,
+          messages: _messages,
+          onSendPressed: _handleSendPressed,
+          theme: DefaultChatTheme(
+            inputTextStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        );
+      } else {
+        return Center(child: Text("Home"));
+      }
+    }
+
     List<Widget> dynamicSidebarWidgets = [];
+    List<String> userIdList = [];
     int indexHome = 0;
+    Widget? ChatWidget;
+    String nowtouser = "Home";
     if (userlist.isNotEmpty) {
+      //for分でまわす
       for (var entry in userlist.asMap().entries) {
         int index = entry.key + 1;
         String userId = entry.value;
-
+        userIdList.add(userId);
+        debugPrint("userId: $userId");
+        //dynamicsidebarwidgetsにwidgetを追加
         dynamicSidebarWidgets.add(
           Padding(
             padding: EdgeInsets.only(top: 20, left: 10, right: 10),
@@ -137,6 +160,12 @@ class _MainDisplayState extends State<MainDisplay> {
                 onTap: () {
                   setState(() {
                     _selectedIndex = index;
+                    if (index != indexHome) {
+                      nowtouser = userIdList[index - 1].toString();
+                    } else {
+                      nowtouser = "Home";
+                    }
+                    ChatWidget = _buildChatWidget(nowtouser);
                   });
                   debugPrint("tapped index: $index, user: $userId");
                 },
@@ -198,6 +227,8 @@ class _MainDisplayState extends State<MainDisplay> {
                     onTap: () {
                       setState(() {
                         _selectedIndex = indexHome;
+                        nowtouser = "Home";
+                        ChatWidget = _buildChatWidget(nowtouser);
                       });
                     },
                     contentPadding: EdgeInsets.symmetric(
@@ -260,17 +291,19 @@ class _MainDisplayState extends State<MainDisplay> {
                     color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Chat(
-                    user: _byuser,
-                    messages: _messages,
-                    onSendPressed: _handleSendPressed,
-                    theme: DefaultChatTheme(
-                      inputTextStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
+                  child: ChatWidget ?? Container(),
                 ),
+                //               child: Chat(
+                //                 user: _byuser,
+                //                 messages: _messages,
+                //                 onSendPressed: _handleSendPressed,
+                //                 theme: DefaultChatTheme(
+                //                   inputTextStyle: TextStyle(
+                //                     color: Theme.of(context).colorScheme.onSurface,
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
               ],
             ),
           ),
@@ -294,9 +327,9 @@ class _MainDisplayState extends State<MainDisplay> {
 
   void CloudMessagesendonly(Uniquemessage message) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String chatId = getChatId(karifromuser, karitouser);
+    String chatId = getChatId(fromuser, karitouser);
     await firestore.collection('chats').doc(chatId).collection('messages').add({
-      'from': karifromuser,
+      'from': fromuser,
       'to': karitouser,
       'message': message.message.text,
       'timestamp': message.message.createdAt,
@@ -310,6 +343,9 @@ class _MainDisplayState extends State<MainDisplay> {
       id: randomString(),
       text: message.text,
     );
-    CloudMessagesendonly(Uniquemessage(textMessage, karifromuser, karitouser));
+    CloudMessagesendonly(Uniquemessage(textMessage, fromuser, karitouser));
   }
 }
+//実装目標
+//1.byuserの動的変更
+//2.相手ユーザーの動的変更
