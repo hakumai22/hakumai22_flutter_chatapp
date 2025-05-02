@@ -15,17 +15,18 @@ class MainDisplay extends StatefulWidget {
 
 class _MainDisplayState extends State<MainDisplay> {
   static List<types.Message> _messages = [];
-  String karifromuser = "56023";
-  String karitouser = "56024";
+  static String karifromuser = "56023"; //最終的にnullだったらエラーを吐くようにする
+  static String karitouser = "56024"; //こっちもnullだったらエラーを吐くようにする
   List<String> userlist = [];
   bool _hasInitialized = false;
   int? _selectedIndex;
   types.User _byuser = types.User(
-    id: "56023",
+    id: karifromuser,
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
-  String fromuser = "56023";
+  String fromuser = karifromuser;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +36,7 @@ class _MainDisplayState extends State<MainDisplay> {
     if (fromuser == null) {
       debugPrint("userIdがnull");
       fromuser = karifromuser;
+      //後でここでエラーを吐くようにする
     }
 
     CustomUser? customuser;
@@ -63,10 +65,11 @@ class _MainDisplayState extends State<MainDisplay> {
       FirebaseFirestore db = FirebaseFirestore.instance;
       final docRef = db
           .collection("chats")
-          .doc(getChatId("56023", "56024"))
+          .doc(getChatId(karifromuser, karitouser))
           .collection("messages");
       docRef.snapshots().listen(
-        (event) async => ListenMethod(event.docs, await findUserInfo("56023")),
+        (event) async =>
+            ListenMethod(event.docs, await findUserInfo(karifromuser)),
         onError: (error) => debugPrint("Listen failed: $error"),
       );
 
@@ -108,38 +111,39 @@ class _MainDisplayState extends State<MainDisplay> {
     super.dispose();
   }
 
+  Widget _buildChatWidget(String chattouser) {
+    if (chattouser != "Home") {
+      return Chat(
+        user: _byuser,
+        messages: _messages,
+        onSendPressed: _handleSendPressed,
+        theme: DefaultChatTheme(
+          inputTextStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      );
+    } else {
+      return Center(child: Text("Get Started"));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget _buildChatWidget(String chattouser) {
-      if (chattouser != "Home") {
-        return Chat(
-          user: _byuser,
-          messages: _messages,
-          onSendPressed: _handleSendPressed,
-          theme: DefaultChatTheme(
-            inputTextStyle: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        );
-      } else {
-        return Center(child: Text("Home"));
-      }
-    }
-
     List<Widget> dynamicSidebarWidgets = [];
     List<String> userIdList = [];
     int indexHome = 0;
-    Widget? ChatWidget;
-    String nowtouser = "Home";
+    String nowtouser =
+        _selectedIndex == 0 || _selectedIndex == null
+            ? "Home"
+            : userlist[_selectedIndex! - 1];
+
     if (userlist.isNotEmpty) {
-      //for分でまわす
       for (var entry in userlist.asMap().entries) {
         int index = entry.key + 1;
         String userId = entry.value;
         userIdList.add(userId);
         debugPrint("userId: $userId");
-        //dynamicsidebarwidgetsにwidgetを追加
         dynamicSidebarWidgets.add(
           Padding(
             padding: EdgeInsets.only(top: 20, left: 10, right: 10),
@@ -160,12 +164,6 @@ class _MainDisplayState extends State<MainDisplay> {
                 onTap: () {
                   setState(() {
                     _selectedIndex = index;
-                    if (index != indexHome) {
-                      nowtouser = userIdList[index - 1].toString();
-                    } else {
-                      nowtouser = "Home";
-                    }
-                    ChatWidget = _buildChatWidget(nowtouser);
                   });
                   debugPrint("tapped index: $index, user: $userId");
                 },
@@ -179,6 +177,8 @@ class _MainDisplayState extends State<MainDisplay> {
         );
       }
     }
+
+    Widget chatContent = _buildChatWidget(nowtouser);
 
     return Scaffold(
       drawer: Drawer(
@@ -227,8 +227,6 @@ class _MainDisplayState extends State<MainDisplay> {
                     onTap: () {
                       setState(() {
                         _selectedIndex = indexHome;
-                        nowtouser = "Home";
-                        ChatWidget = _buildChatWidget(nowtouser);
                       });
                     },
                     contentPadding: EdgeInsets.symmetric(
@@ -275,7 +273,6 @@ class _MainDisplayState extends State<MainDisplay> {
           ),
         ],
       ),
-
       body: Row(
         children: [
           Expanded(
@@ -291,19 +288,8 @@ class _MainDisplayState extends State<MainDisplay> {
                     color: Theme.of(context).colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: ChatWidget ?? Container(),
+                  child: chatContent,
                 ),
-                //               child: Chat(
-                //                 user: _byuser,
-                //                 messages: _messages,
-                //                 onSendPressed: _handleSendPressed,
-                //                 theme: DefaultChatTheme(
-                //                   inputTextStyle: TextStyle(
-                //                     color: Theme.of(context).colorScheme.onSurface,
-                //                   ),
-                //                 ),
-                //               ),
-                //             ),
               ],
             ),
           ),
@@ -347,5 +333,6 @@ class _MainDisplayState extends State<MainDisplay> {
   }
 }
 //実装目標
-//1.byuserの動的変更
 //2.相手ユーザーの動的変更
+//3.GetStartedの実装
+//4.正当な番号かどうかの確認
