@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -25,7 +26,39 @@ class _MainDisplayState extends State<MainDisplay> {
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
+  //ここはまだ仮のデータ
   String fromuser = karifromuser;
+  String touser = "Home";
+  StreamSubscription? subscription;
+  StreamSubscription? startsubscription(String user, String tuser) {
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    var docRef = db
+        .collection("chats")
+        .doc(getChatId(user, tuser))
+        .collection("messages");
+
+    bool isFirstSnapshot = true; // 初回のスナップショットかどうかを追跡
+
+    return docRef.snapshots().listen((event) async {
+      if (isFirstSnapshot) {
+        isFirstSnapshot = false; // 初回のスナップショットをスキップ
+        return;
+      }
+
+      // 変更があった場合のみListenMethodを呼び出す
+      if (event.docChanges.isNotEmpty) {
+        ListenMethod(event.docs, await findUserInfo(fromuser));
+      }
+    }, onError: (error) => debugPrint("Listen failed: $error"));
+  }
+
+  void cancelsubscription(StreamSubscription? subscription) {
+    if (subscription != null) {
+      subscription.cancel();
+    } else {
+      return;
+    }
+  }
 
   @override
   void initState() {
@@ -62,16 +95,6 @@ class _MainDisplayState extends State<MainDisplay> {
         firstName: customuser!.userName,
         imageUrl: "images/genseki.png",
       );
-      FirebaseFirestore db = FirebaseFirestore.instance;
-      final docRef = db
-          .collection("chats")
-          .doc(getChatId(karifromuser, karitouser))
-          .collection("messages");
-      docRef.snapshots().listen(
-        (event) async =>
-            ListenMethod(event.docs, await findUserInfo(karifromuser)),
-        onError: (error) => debugPrint("Listen failed: $error"),
-      );
 
       if (userlist.isNotEmpty && _selectedIndex == null) {
         _selectedIndex = 0;
@@ -79,27 +102,6 @@ class _MainDisplayState extends State<MainDisplay> {
 
       if (mounted) {
         setState(() {});
-      }
-
-      if (!_hasInitialized) {
-        _hasInitialized = true;
-        FirebaseFirestore db = FirebaseFirestore.instance;
-        db
-            .collection('chats')
-            .doc(getChatId(fromuser, karitouser))
-            .collection('messages')
-            .orderBy('timestamp', descending: false)
-            .get()
-            .then((snapshot) {
-              snapshot.docs.forEach((doc) {
-                addmessageafterlisten(
-                  doc.data()["message"],
-                  karitouser,
-                  doc.data()["timestamp"],
-                  customuser,
-                );
-              });
-            });
       }
     });
   }
@@ -133,10 +135,6 @@ class _MainDisplayState extends State<MainDisplay> {
     List<Widget> dynamicSidebarWidgets = [];
     List<String> userIdList = [];
     int indexHome = 0;
-    String nowtouser =
-        _selectedIndex == 0 || _selectedIndex == null
-            ? "Home"
-            : userlist[_selectedIndex! - 1];
 
     if (userlist.isNotEmpty) {
       for (var entry in userlist.asMap().entries) {
@@ -163,8 +161,39 @@ class _MainDisplayState extends State<MainDisplay> {
                 selected: _selectedIndex == index,
                 onTap: () {
                   setState(() {
+                    touser =
+                        index == 0 || index == null
+                            ? "Home"
+                            : userlist[index! - 1]; //最初のタイルはHomeなので-1している
+                    if (_selectedIndex != index) {
+                      _messages.clear();
+                      cancelsubscription(subscription);
+                      subscription = startsubscription(fromuser, touser);
+                      FirebaseFirestore db = FirebaseFirestore.instance;
+                      db
+                          .collection('chats')
+                          .doc(getChatId(fromuser, touser))
+                          .collection('messages')
+                          .orderBy('timestamp', descending: false)
+                          .get()
+                          .then((snapshot) async {
+                            for (var doc in snapshot.docs) {
+                              // forEachの代わりにfor-inを使用
+                              // 非同期で取得したユーザー情報を待機
+                              final userInfo = await findUserInfo(fromuser);
+                              // userInfoを使用してメッセージを追加
+                              addmessageafterlisten(
+                                doc.data()["message"],
+                                touser,
+                                doc.data()["timestamp"],
+                                userInfo, // 解決済みの値を渡す
+                              );
+                            }
+                          });
+                    }
                     _selectedIndex = index;
                   });
+
                   debugPrint("tapped index: $index, user: $userId");
                 },
                 contentPadding: EdgeInsets.symmetric(
@@ -178,7 +207,7 @@ class _MainDisplayState extends State<MainDisplay> {
       }
     }
 
-    Widget chatContent = _buildChatWidget(nowtouser);
+    Widget chatContent = _buildChatWidget(touser);
 
     return Scaffold(
       drawer: Drawer(
@@ -211,7 +240,12 @@ class _MainDisplayState extends State<MainDisplay> {
                 endIndent: 16,
               ),
               Padding(
-                padding: EdgeInsets.only(top: 20, left: 10, right: 10),
+                padding: EdgeInsets.only(
+                  top: 20,
+                  left: 10,
+                  right: 10,
+                  bottom: 20,
+                ),
                 child: Material(
                   color: Colors.transparent,
                   child: ListTile(
@@ -226,6 +260,14 @@ class _MainDisplayState extends State<MainDisplay> {
                     selected: _selectedIndex == indexHome,
                     onTap: () {
                       setState(() {
+                        touser =
+                            indexHome == 0 || indexHome == null
+                                ? "Home"
+                                : userlist[_selectedIndex!]; //最初のタイルはHomeなので-1している
+                        if (_selectedIndex != indexHome) {
+                          _messages.clear();
+                          cancelsubscription(subscription);
+                        }
                         _selectedIndex = indexHome;
                       });
                     },
@@ -235,6 +277,13 @@ class _MainDisplayState extends State<MainDisplay> {
                     ),
                   ),
                 ),
+              ),
+              Divider(
+                color: Theme.of(context).colorScheme.secondaryFixedDim,
+                height: 1,
+                thickness: 1,
+                indent: 16,
+                endIndent: 16,
               ),
               ...dynamicSidebarWidgets,
             ],
@@ -313,10 +362,10 @@ class _MainDisplayState extends State<MainDisplay> {
 
   void CloudMessagesendonly(Uniquemessage message) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    String chatId = getChatId(fromuser, karitouser);
+    String chatId = getChatId(fromuser, touser);
     await firestore.collection('chats').doc(chatId).collection('messages').add({
       'from': fromuser,
-      'to': karitouser,
+      'to': touser,
       'message': message.message.text,
       'timestamp': message.message.createdAt,
     });
@@ -329,10 +378,14 @@ class _MainDisplayState extends State<MainDisplay> {
       id: randomString(),
       text: message.text,
     );
-    CloudMessagesendonly(Uniquemessage(textMessage, fromuser, karitouser));
+    if (touser == "Home") {
+      return;
+    }
+    CloudMessagesendonly(Uniquemessage(textMessage, fromuser, touser));
   }
 }
 //実装目標
 //2.相手ユーザーの動的変更
 //3.GetStartedの実装
 //4.正当な番号かどうかの確認
+//メッセージの中のto,fromからの依存をなくす（getchatidの第一引数、第２引数を参照する）
