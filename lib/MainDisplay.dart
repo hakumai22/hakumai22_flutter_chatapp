@@ -16,18 +16,16 @@ class MainDisplay extends StatefulWidget {
 
 class _MainDisplayState extends State<MainDisplay> {
   static List<types.Message> _messages = [];
-  static String karifromuser = "56023"; //最終的にnullだったらエラーを吐くようにする
-  static String karitouser = "56024"; //こっちもnullだったらエラーを吐くようにする
   List<String> userlist = [];
   bool _hasInitialized = false;
   int? _selectedIndex;
   types.User _byuser = types.User(
-    id: karifromuser,
+    id: "56023",
     firstName: "hakumai22",
     imageUrl: "images/genseki.png",
   );
   //ここはまだ仮のデータ
-  String fromuser = karifromuser;
+  String fromuser = "56023";
   String touser = "Home";
   StreamSubscription? subscription;
   StreamSubscription? startsubscription(String user, String tuser) {
@@ -68,7 +66,7 @@ class _MainDisplayState extends State<MainDisplay> {
     fromuser = widget.userId;
     if (fromuser == null) {
       debugPrint("userIdがnull");
-      fromuser = karifromuser;
+      fromuser = "56023"; //仮のデータ
       //後でここでエラーを吐くようにする
     }
 
@@ -385,7 +383,5 @@ class _MainDisplayState extends State<MainDisplay> {
   }
 }
 //実装目標
-//2.相手ユーザーの動的変更
-//3.GetStartedの実装
 //4.正当な番号かどうかの確認
-//メッセージの中のto,fromからの依存をなくす（getchatidの第一引数、第２引数を参照する）
+//5.メッセージの中のto,fromからの依存をなくす（getchatidの第一引数、第２引数を参照する）
