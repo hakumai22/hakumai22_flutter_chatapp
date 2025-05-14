@@ -383,5 +383,5 @@ class _MainDisplayState extends State<MainDisplay> {
   }
 }
 //実装目標
-//4.正当な番号かどうかの確認
+//4.Passwordの確認 
 //5.メッセージの中のto,fromからの依存をなくす（getchatidの第一引数、第２引数を参照する）

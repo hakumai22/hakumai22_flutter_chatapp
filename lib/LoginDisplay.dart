@@ -51,7 +51,11 @@ class _LogindisplayState extends State<Logindisplay> {
             ElevatedButton(
               onPressed: () {
                 // ログイン処理をここに追加
-                if (_userId.isEmpty) {
+                bool IsvalidId =
+                    _userId.isEmpty ||
+                    _userId.length != 5 ||
+                    int.tryParse(_userId) == null;
+                if (IsvalidId) {
                   showDialog(
                     context: context,
                     builder: (context) {
